@@ -17,369 +17,386 @@
 </body>
 </html> -->
 
-<!DOCTYPE html>
+<!doctype html>
 
-<html><body>
+<html>
+  <head>
+    <title>Chat | bksysnet@hcmut</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
 
-<style>
-    .message-window {
-        width: 100%;
-        max-height: 20rem;
-        overflow: scroll;
-    }
-</style>
+  <body>
+    <main class="page-shell">
+      <section class="card">
+        <div class="title-row">
+          <div>
+            <span class="badge">Realtime Chat</span>
+            <h2 id="greet"></h2>
+          </div>
+          <p class="muted">Kết nối peer-to-peer nhanh chóng</p>
+        </div>
 
-<div>
-    <h3 id="greet"></h3>
-</div>
+        <div class="chat-grid">
+          <aside>
+            <div class="panel">
+              <h3>Online peers</h3>
+              <div id="peerslist" class="list"></div>
+            </div>
 
-<div>
-    <h3>Online peers</h3>
-    <div id="peerslist" class="peerlist">
+            <div class="panel">
+              <h3>Channels</h3>
+              <div id="channels" class="list"></div>
+            </div>
 
-    </div>
-</div>
+            <div class="panel">
+              <h3>Send to channel</h3>
+              <form id="sendToChannel" method="POST" action="/sendchannel">
+                <input
+                  name="channel name"
+                  type="text"
+                  placeholder="Channel name"
+                />
+                <input name="message" type="text" placeholder="Message" />
+                <button class="btn" type="button" onclick="sendToChannel()">
+                  Send
+                </button>
+              </form>
+            </div>
+          </aside>
 
-<div>
-    <h3>Channels</h3>
-    <div id="channels"">
+          <section class="stack">
+            <div class="panel">
+              <h3>Messages</h3>
+              <div id="messages" class="message-window"></div>
+            </div>
 
-    </div>
-</div>
+            <div class="panel">
+              <h3>Send Direct message</h3>
+              <form id="sendToPeer" method="POST" action="/send">
+                <input
+                  name="peer address"
+                  type="text"
+                  placeholder="Peer address"
+                />
+                <input name="message" type="text" placeholder="Message" />
+                <button class="btn" type="button" onclick="sendToPeer()">
+                  Send
+                </button>
+              </form>
+            </div>
 
+            <div class="panel">
+              <h3>Broadcast message</h3>
+              <form id="broadcast" method="POST" action="/send">
+                <input
+                  name="message"
+                  type="text"
+                  placeholder="Broadcast message"
+                />
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  onclick="broadcast()"
+                >
+                  Broadcast
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
 
-<div>
-    <h3>Send to channel</h3>
-    <div>
-        <form id="sendToChannel" method="POST" action="/sendchannel">
-            <input name="channel name" type="text">
-            <input name="message" type="text">
-            <button type="button" onclick="sendToChannel()">Send Data</button>
-        </form>
-    </div>
-</div>
+    <script>
+      let CLIENT = "0.0.0.0:9000";
+      let PEERLIST = [];
+      let trackerAvailable = true;
+      const TRACKER = "http://0.0.0.0:9998";
 
-
-<div>
-    <h3>Messages</h3>
-    <div id="messages">
-
-    </div>
-</div>
-
-<div>
-    <h3>Send Direct message</h3>
-    <div>
-        <form id="sendToPeer" method="POST" action="/send">
-            <input name="peer address" type="text">
-            <input name="message" type="text">
-            <button type="button" onclick="sendToPeer()">Send Data</button>
-        </form>
-    </div>
-</div>
-
-<div>
-    <h3>Broadcast message</h3>
-    <div>
-        <form id="broadcast" method="POST" action="/send">
-            <input name="message" type="text">
-            <button type="button" onclick="broadcast()">Send Data</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    let CLIENT = "0.0.0.0:9000";
-    let PEERLIST = [];
-    let trackerAvailable = true;
-    const TRACKER = 'http://0.0.0.0:9998';
-
-    function displayMessage(username, msg, channel = "") {
-        let paragraph = document.createElement('p');
+      function displayMessage(username, msg, channel = "") {
+        let paragraph = document.createElement("p");
         paragraph.textContent = username + ": " + msg;
 
         if (channel) {
-            paragraph.textContent = '{' + channel + '}: ' + paragraph.textContent;
+          paragraph.textContent = "{" + channel + "}: " + paragraph.textContent;
         }
 
-        let displaylist = document.getElementById('messages');
+        let displaylist = document.getElementById("messages");
         displaylist.appendChild(paragraph);
-    }
+      }
 
-    function notify(msg = "") {
+      function notify(msg = "") {
         let out = "New message received";
         if (msg) {
-            out += ": " + msg;
+          out += ": " + msg;
         }
 
         if (!("Notification" in window)) {
-        // Check if the browser supports notifications
-            alert("This browser does not support desktop notification");
+          // Check if the browser supports notifications
+          alert("This browser does not support desktop notification");
         } else if (Notification.permission === "granted") {
-        // Check whether notification permissions have already been granted;
-        // if so, create a notification
-            const notification = new Notification(out);
-        // …
+          // Check whether notification permissions have already been granted;
+          // if so, create a notification
+          const notification = new Notification(out);
+          // …
         } else if (Notification.permission !== "denied") {
-        // We need to ask the user for permission
-            Notification.requestPermission().then((permission) => {
-                // If the user accepts, let's create a notification
-                if (permission === "granted") {
-                    const notification = new Notification(out);
-                // …
-                }
-            });
+          // We need to ask the user for permission
+          Notification.requestPermission().then((permission) => {
+            // If the user accepts, let's create a notification
+            if (permission === "granted") {
+              const notification = new Notification(out);
+              // …
+            }
+          });
         }
 
-      // At last, if the user has denied notifications, and you
-      // want to be respectful there is no need to bother them anymore.
-    }
+        // At last, if the user has denied notifications, and you
+        // want to be respectful there is no need to bother them anymore.
+      }
 
-
-    async function sendRequest(url, method = 'GET', data = null) {
+      async function sendRequest(url, method = "GET", data = null) {
         try {
-            const options = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
+          const options = {
+            method,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          };
 
-            if (data) {
-                str = JSON.stringify(data);
-                options.body = str;
-            }
+          if (data) {
+            str = JSON.stringify(data);
+            options.body = str;
+          }
 
-            const response = await fetch(url, options);
+          const response = await fetch(url, options);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
 
-            const result = await response.json();
-            return result;
+          const result = await response.json();
+          return result;
         } catch (error) {
-            console.error('API Error:', error);
-            return null;
+          console.error("API Error:", error);
+          return null;
         }
-    }
+      }
 
-    async function pollPeers() {
+      async function pollPeers() {
         if (!trackerAvailable) return;
 
         try {
-            PEERLIST = await sendRequest('/list', "GET");
-            let peerlist = document.getElementById('peerslist');
-            peerlist.innerHTML = "";
-            PEERLIST.forEach(p => {
-                let content = p['username'] + ' (' + p['id'] + ')';
-                let connected = p['connected'];
+          PEERLIST = await sendRequest("/list", "GET");
+          let peerlist = document.getElementById("peerslist");
+          peerlist.innerHTML = "";
+          PEERLIST.forEach((p) => {
+            let content = p["username"] + " (" + p["id"] + ")";
+            let connected = p["connected"];
 
-                if (p['id'] == CLIENT) {
-                    content += ' (You)';
-                }
+            if (p["id"] == CLIENT) {
+              content += " (You)";
+            }
 
-                if (connected) {
-                    content += ' (Connected)';
-                }
+            if (connected) {
+              content += " (Connected)";
+            }
 
-                let container = document.createElement('div');
+            let container = document.createElement("div");
 
-                let peernode = document.createElement('p');
-                peernode.textContent = content;
+            let peernode = document.createElement("p");
+            peernode.textContent = content;
 
-                container.appendChild(peernode);
+            container.appendChild(peernode);
 
-                if (!connected && p['id'] != CLIENT) {
-                    let button = document.createElement('button')
-                    button.textContent = "Connect"
-                    button.type = "Button";
-                    button.addEventListener("click", () => {
-                        console.log("Connecting to", p['id'], '...')
-                        sendRequest('/connectpeer', 'POST', p['id'])
-                        pollPeers()
-                    });
-                    container.appendChild(button);
-                }
+            if (!connected && p["id"] != CLIENT) {
+              let button = document.createElement("button");
+              button.textContent = "Connect";
+              button.type = "Button";
+              button.addEventListener("click", () => {
+                console.log("Connecting to", p["id"], "...");
+                sendRequest("/connectpeer", "POST", p["id"]);
+                pollPeers();
+              });
+              container.appendChild(button);
+            }
 
-                peerlist.appendChild(container);
-
-            });
+            peerlist.appendChild(container);
+          });
         } catch {
-            console.log("No tracker available.")
-            trackerAvailable = false;
-            PEERLIST = [];
+          console.log("No tracker available.");
+          trackerAvailable = false;
+          PEERLIST = [];
         }
-    }
+      }
 
-    async function sendToPeer() {
-        let form = document.getElementById('sendToPeer')
+      async function sendToPeer() {
+        let form = document.getElementById("sendToPeer");
         let data = new FormData(form);
-        let addr = data.get('peer address')
-        let msg = data.get('message')
+        let addr = data.get("peer address");
+        let msg = data.get("message");
 
         if (msg.length == 0) {
-            console.log("Message must not be empty.");
-            return;
+          console.log("Message must not be empty.");
+          return;
         }
 
-        await sendRequest('/send', 'POST', {
-            'receiver': addr,
-            'message': msg
-        }).then((v) => {
+        await sendRequest("/send", "POST", {
+          receiver: addr,
+          message: msg,
+        })
+          .then((v) => {
             displayMessage("[You]", msg);
-        }).catch((x) =>
-            console.log("Failed to send message to peer")
-        )
-    }
+          })
+          .catch((x) => console.log("Failed to send message to peer"));
+      }
 
-    async function sendToChannel() {
-        let form = document.getElementById('sendToChannel')
+      async function sendToChannel() {
+        let form = document.getElementById("sendToChannel");
         let data = new FormData(form);
-        let chname = data.get('channel name')
-        let msg = data.get('message')
+        let chname = data.get("channel name");
+        let msg = data.get("message");
 
         if (chname.length == 0) {
-            console.log("Channel name must not be empty.")
-            return;
+          console.log("Channel name must not be empty.");
+          return;
         }
 
         if (msg.length == 0) {
-            console.log("Message must not be empty.");
-            return;
+          console.log("Message must not be empty.");
+          return;
         }
 
-        await sendRequest('/sendchannel', 'POST', {
-            'channel': chname,
-            'message': msg
-        }).then((v) => {
+        await sendRequest("/sendchannel", "POST", {
+          channel: chname,
+          message: msg,
+        })
+          .then((v) => {
             displayMessage("[You]", msg, chname);
-        }).catch((x) =>
-            console.log("Failed to send message to peer")
-        )
-    }
+          })
+          .catch((x) => console.log("Failed to send message to peer"));
+      }
 
-    async function broadcast() {
-        let form = document.getElementById('broadcast')
+      async function broadcast() {
+        let form = document.getElementById("broadcast");
         let data = new FormData(form);
-        let msg = data.get('message')
+        let msg = data.get("message");
 
         if (msg.length == 0) {
-            console.log("Message must not be empty.");
-            return;
+          console.log("Message must not be empty.");
+          return;
         }
 
-        await sendRequest('/broadcast', 'POST', msg)
-        .then((v) => {
+        await sendRequest("/broadcast", "POST", msg)
+          .then((v) => {
             displayMessage("[You]", msg);
-        }).catch((x) =>
-            console.log("Failed to send message to peer")
-        )
-    }
+          })
+          .catch((x) => console.log("Failed to send message to peer"));
+      }
 
-    async function startPolling(func, time, startnow = true) {
+      async function startPolling(func, time, startnow = true) {
         if (startnow) {
-            func();
+          func();
         }
 
         setInterval(() => func(), time);
-    }
+      }
 
-    async function pollMessages() {
+      async function pollMessages() {
         let willNotify = false;
         let msgNotify = "";
 
-        await sendRequest('/pollinbox', 'GET')
-            .then((list) => {
-                list.forEach((msg) => {
-                    let peername = msg['sender'];
-                    console.log(msg);
+        await sendRequest("/pollinbox", "GET").then((list) => {
+          list.forEach((msg) => {
+            let peername = msg["sender"];
+            console.log(msg);
 
-                    PEERLIST.forEach((v) => {
-                        if (v['id'] == msg['sender']) peername = v['username']
-                    });
-
-                    displayMessage(peername, msg['message'], msg['channel'])
-
-                    msgNotify = msg['message'];
-                    willNotify = true;
-                });
+            PEERLIST.forEach((v) => {
+              if (v["id"] == msg["sender"]) peername = v["username"];
             });
 
-        if (willNotify) {
-            notify(msgNotify);
-        }
-    }
+            displayMessage(peername, msg["message"], msg["channel"]);
 
-    async function pollChannels() {
+            msgNotify = msg["message"];
+            willNotify = true;
+          });
+        });
+
+        if (willNotify) {
+          notify(msgNotify);
+        }
+      }
+
+      async function pollChannels() {
         if (!trackerAvailable) return;
 
         try {
-            sendRequest('/listchannels', 'GET').then((v) => {
-                console.log(v);
+          sendRequest("/listchannels", "GET").then((v) => {
+            console.log(v);
 
-                channellist = document.getElementById('channels')
-                channellist.textContent = "";
+            channellist = document.getElementById("channels");
+            channellist.textContent = "";
 
-                v.forEach((c) => {
-                    let ch = document.createElement('p');
-                    ch.textContent = c['name'] + " (Members:";
-                    let joined = false;
+            v.forEach((c) => {
+              let ch = document.createElement("p");
+              ch.textContent = c["name"] + " (Members:";
+              let joined = false;
 
-                    c['peers'].forEach((p) => {
-                        if (p == CLIENT) {
-                            joined = true;
-                            ch.textContent += ' [You]';
-                        } else {
-                            let peername = 'Guest';
+              c["peers"].forEach((p) => {
+                if (p == CLIENT) {
+                  joined = true;
+                  ch.textContent += " [You]";
+                } else {
+                  let peername = "Guest";
 
-                            PEERLIST.forEach((v) => {
-                                if (v['id'] == p) peername = v['username'];
-                            });
+                  PEERLIST.forEach((v) => {
+                    if (v["id"] == p) peername = v["username"];
+                  });
 
-                            ch.textContent += ' ' + peername;
-                        }
-                    })
+                  ch.textContent += " " + peername;
+                }
+              });
 
-                    ch.textContent += ')';
+              ch.textContent += ")";
 
-                    channellist.appendChild(ch);
+              channellist.appendChild(ch);
 
-                    if (!joined) {
-                        let button = document.createElement('button')
-                        button.textContent = "Join"
-                        button.type = "Button";
-                        button.addEventListener("click", async () => {
-                            await sendRequest('/joinchannel', 'POST', c['name']);
-                            pollChannels();
-                        });
-                        channellist.appendChild(button);
-                    }
+              if (!joined) {
+                let button = document.createElement("button");
+                button.textContent = "Join";
+                button.type = "Button";
+                button.addEventListener("click", async () => {
+                  await sendRequest("/joinchannel", "POST", c["name"]);
+                  pollChannels();
                 });
-            })
-        } catch {
-            console.log("Tracker not available.")
-            trackerAvailable = false;
-        }
-    }
-
-    async function main() {
-        // Receive own username
-        await sendRequest('/get', 'GET')
-            .then((v) => {
-                let selfname = v['username']
-                CLIENT = v['ip'] + ':' + v['port'];
-                document.getElementById('greet').textContent = "Hello " + selfname;
+                channellist.appendChild(button);
+              }
             });
+          });
+        } catch {
+          console.log("Tracker not available.");
+          trackerAvailable = false;
+        }
+      }
 
-        console.log(CLIENT)
+      async function main() {
+        // Receive own username
+        await sendRequest("/get", "GET").then((v) => {
+          let selfname = v["username"];
+          CLIENT = v["ip"] + ":" + v["port"];
+          document.getElementById("greet").textContent = "Hello " + selfname;
+        });
+
+        console.log(CLIENT);
 
         startPolling(pollPeers, 5000, true);
         startPolling(pollMessages, 1000);
         startPolling(pollChannels, 10000, true);
-    }
+      }
 
-    main()
-</script>
-
-</body></html>
+      main();
+    </script>
+  </body>
+</html>

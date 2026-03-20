@@ -1,8 +1,42 @@
-<html><body>
-<h1>Login</h1>
-<form method="POST" action="/login">
-  Username: <input name="username" type="text"><br>
-  Password: <input name="password" type="password"><br>
-  <input type="submit" value="Login">
-</form>
-</body></html>
+<!doctype html>
+<html>
+  <head>
+    <title>Login | bksysnet@hcmut</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body>
+    <main class="page-shell">
+      <section class="card login-wrap">
+        <span class="badge">Welcome Back</span>
+        <h1>Đăng nhập</h1>
+        <p class="subtitle">Điền thông tin để vào hệ thống chat.</p>
+
+        <form method="POST" action="/login">
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Nhập username"
+            required
+          />
+
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Nhập password"
+            required
+          />
+
+          <button class="btn" type="submit">Login</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

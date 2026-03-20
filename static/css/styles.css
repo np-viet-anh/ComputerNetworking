@@ -1,33 +1,229 @@
-body {
-	background-color: #f0f0f2;
-	margin: 0;
-	padding: 0;
-	font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+:root {
+  color-scheme: light;
+  --bg: #f4f7ff;
+  --surface: #ffffff;
+  --surface-soft: #f8faff;
+  --text: #1d2440;
+  --muted: #667299;
+  --primary: #5b6dff;
+  --primary-2: #8f63ff;
+  --success: #22b07d;
+  --ring: rgba(91, 109, 255, 0.28);
+  --shadow: 0 16px 40px rgba(38, 50, 120, 0.12);
+  --radius: 18px;
+}
 
+* {
+  box-sizing: border-box;
 }
-div {
-	width: 600px;
-	margin: 5em auto;
-	padding: 2em;
-	background-color: #fdfdff;
-	border-radius: 0.5em;
-	box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", "Open Sans", Arial, sans-serif;
+  background:
+    radial-gradient(
+      circle at 10% -20%,
+      rgba(143, 99, 255, 0.2),
+      transparent 35%
+    ),
+    radial-gradient(circle at 90% 0%, rgba(91, 109, 255, 0.2), transparent 32%),
+    var(--bg);
+  color: var(--text);
 }
-a:link, a:visited {
-	color: #38488f;
-	text-decoration: none;
+
+a {
+  color: var(--primary);
+  text-decoration: none;
 }
-.container {
-	max-width: 800px;
-	margin: 50px auto;
-	background: white;
-	padding: 20px;
-	box-shadow: 0 0 10px rgba(0,0,0,0.1);
-	text-align: center;
+
+.page-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
-img {
-	max-width: 100%;  
-	height: auto;
-	border-radius: 8px;
-	margin-top: 20px;
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero h1,
+.hero h2,
+h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 0;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+
+.media {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid #e8ecff;
+  box-shadow: 0 10px 26px rgba(86, 108, 226, 0.14);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: #eef1ff;
+  color: #3b4ac4;
+  margin-bottom: 10px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(91, 109, 255, 0.26);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #edf1ff;
+  color: #3342af;
+  box-shadow: none;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #36406a;
+}
+
+input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #dbe2ff;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  background: #fbfcff;
+}
+
+input:focus {
+  border-color: #8c9cff;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.login-wrap {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.chat-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 18px;
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #edf1ff;
+  box-shadow: 0 8px 20px rgba(33, 52, 141, 0.08);
+  margin-bottom: 14px;
+}
+
+.panel h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.list p,
+#messages p {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  border: 1px solid #edf1ff;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.message-window {
+  min-height: 220px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: #fcfdff;
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid #e9edff;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .chat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-shell {
+    padding: 24px 14px;
+  }
+
+  .card {
+    padding: 18px;
+  }
 }
