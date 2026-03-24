@@ -138,7 +138,23 @@ input {
   background: #fbfcff;
 }
 
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #dbe2ff;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  background: #fbfcff;
+}
+
 input:focus {
+  border-color: #8c9cff;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+select:focus {
   border-color: #8c9cff;
   box-shadow: 0 0 0 3px var(--ring);
 }
@@ -211,6 +227,12 @@ input:focus {
 .muted {
   color: var(--muted);
   font-size: 14px;
+}
+
+.peer-action {
+  margin-top: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
 }
 
 @media (max-width: 900px) {

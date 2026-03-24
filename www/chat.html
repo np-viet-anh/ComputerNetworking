@@ -76,11 +76,9 @@
             <div class="panel">
               <h3>Send Direct message</h3>
               <form id="sendToPeer" method="POST" action="/send">
-                <input
-                  name="peer address"
-                  type="text"
-                  placeholder="Peer address"
-                />
+                <select name="peer" id="directPeerSelect">
+                  <option value="">Choose a peer to chat</option>
+                </select>
                 <input name="message" type="text" placeholder="Message" />
                 <button class="btn" type="button" onclick="sendToPeer()">
                   Send
@@ -191,12 +189,19 @@
         try {
           PEERLIST = await sendRequest("/list", "GET");
           let peerlist = document.getElementById("peerslist");
+          let directPeerSelect = document.getElementById("directPeerSelect");
+          let selectedPeer = directPeerSelect.value;
+
           peerlist.innerHTML = "";
+          directPeerSelect.innerHTML =
+            '<option value="">Choose a peer to chat</option>';
+
           PEERLIST.forEach((p) => {
             let content = p["username"] + " (" + p["id"] + ")";
             let connected = p["connected"];
+            let isSelf = p["id"] == CLIENT;
 
-            if (p["id"] == CLIENT) {
+            if (isSelf) {
               content += " (You)";
             }
 
@@ -211,20 +216,49 @@
 
             container.appendChild(peernode);
 
-            if (!connected && p["id"] != CLIENT) {
+            if (connected && !isSelf) {
+              let option = document.createElement("option");
+              option.value = p["id"];
+              option.textContent = p["username"] + " (" + p["id"] + ")";
+              directPeerSelect.appendChild(option);
+            }
+
+            if (!connected && !isSelf) {
               let button = document.createElement("button");
               button.textContent = "Connect";
               button.type = "Button";
+              button.className = "btn btn-secondary peer-action";
               button.addEventListener("click", () => {
                 console.log("Connecting to", p["id"], "...");
                 sendRequest("/connectpeer", "POST", p["id"]);
                 pollPeers();
               });
               container.appendChild(button);
+            } else if (connected && !isSelf) {
+              let button = document.createElement("button");
+              button.textContent = "Message";
+              button.type = "Button";
+              button.className = "btn peer-action";
+              button.addEventListener("click", () => {
+                directPeerSelect.value = p["id"];
+                document
+                  .querySelector('#sendToPeer input[name="message"]')
+                  .focus();
+              });
+              container.appendChild(button);
             }
 
             peerlist.appendChild(container);
           });
+
+          if (
+            selectedPeer &&
+            Array.from(directPeerSelect.options).some(
+              (option) => option.value === selectedPeer,
+            )
+          ) {
+            directPeerSelect.value = selectedPeer;
+          }
         } catch {
           console.log("No tracker available.");
           trackerAvailable = false;
@@ -235,8 +269,13 @@
       async function sendToPeer() {
         let form = document.getElementById("sendToPeer");
         let data = new FormData(form);
-        let addr = data.get("peer address");
+        let addr = data.get("peer");
         let msg = data.get("message");
+
+        if (!addr) {
+          console.log("Please choose a peer first.");
+          return;
+        }
 
         if (msg.length == 0) {
           console.log("Message must not be empty.");
@@ -249,6 +288,7 @@
         })
           .then((v) => {
             displayMessage("[You]", msg);
+            form.reset();
           })
           .catch((x) => console.log("Failed to send message to peer"));
       }
